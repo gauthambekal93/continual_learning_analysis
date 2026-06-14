@@ -1,14 +1,2 @@
 run_id,seed,depth,width,num_tasks,epochs_per_task,batch_size,n_train,n_test,noise,lr,wd,activation,device,out_dir,save_every,print_every,residual,norm
-20260614_011920_d3ac2787,20,20,10,1000,20,64,512,2048,0.02,0.01,0.0,relu,cpu,results/synthetic_non_linear_task/,100,10,none,none
-20260614_015704_456e29e5,20,4,10,1000,20,64,512,2048,0.02,0.01,0.0,relu,cpu,results/synthetic_non_linear_task/,100,10,none,none
-20260614_020644_a0e10d0b,20,8,10,1000,20,64,512,2048,0.02,0.01,0.0,relu,cpu,results/synthetic_non_linear_task/,100,10,none,none
-20260614_022324_bf14eb25,20,20,10,1000,20,64,512,2048,0.02,0.01,0.0,relu,cpu,results/synthetic_non_linear_task/,100,10,True,none
-20260614_030006_e626eb68,20,4,10,1000,20,64,512,2048,0.02,0.01,0.0,relu,cpu,results/synthetic_non_linear_task/,100,10,True,none
-20260614_030923_1d6e7c40,20,8,10,1000,20,64,512,2048,0.02,0.01,0.0,relu,cpu,results/synthetic_non_linear_task/,100,10,True,none
-20260614_091435_a67fa6ff,20,4,10,1000,20,64,512,2048,0.02,0.01,0.0,relu,cpu,results/synthetic_non_linear_task/,100,10,none,none
-20260614_091530_b24f6984,20,4,10,1000,20,64,512,2048,0.02,0.01,0.0,relu,cpu,results/synthetic_non_linear_task/,100,10,False,none
-20260614_093031_05173f5d,20,20,10,200,20,64,512,2048,0.02,0.01,0.0,relu,cpu,results/synthetic_non_linear_task/,100,10,False,none
-20260614_093545_b7e4402c,20,20,10,30,20,64,512,2048,0.02,0.01,0.0,relu,cpu,results/synthetic_non_linear_task/,10,10,False,none
-20260614_093813_b1b4bbea,20,20,10,30,20,64,512,2048,0.02,0.01,0.0,relu,cpu,results/synthetic_non_linear_task/,10,10,False,none
-20260614_094001_0c4ad451,20,20,10,30,20,64,512,2048,0.02,0.01,0.0,relu,cpu,results/synthetic_non_linear_task/,10,10,False,none
-20260614_094759_c206382d,20,20,10,30,20,64,512,2048,0.02,0.01,0.0,relu,cpu,results/synthetic_non_linear_task/,10,10,False,none
+20260614_124108_607c9eaf,20,12,10,200,20,64,512,2048,0.02,0.01,0.0,relu,cpu,results/synthetic_non_linear_task/,10,10,False,none

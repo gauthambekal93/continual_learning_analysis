@@ -51,3 +51,129 @@ def dead_relu_fraction(net, X, device="cpu"):
             relu_id += 1
 
     return out
+
+
+
+def get_hessian_metrics(X, y, device, net):
+
+    ce = nn.CrossEntropyLoss()
+    net.train()
+
+    X = torch.as_tensor(X, dtype=torch.float32, device=device)
+    y = torch.as_tensor(y, dtype=torch.long, device=device)
+
+    loss = ce(net(X), y)
+
+    params = [p for p in net.parameters() if p.requires_grad]
+
+    # first-order gradients
+    grads = torch.autograd.grad(
+        loss,
+        params,
+        create_graph=True
+    )
+
+    # build full Hessian matrix
+    hessian_rows = []
+
+    for grad in grads:
+
+        grad_flat = grad.reshape(-1)
+
+        for g in grad_flat:
+
+            second_grads = torch.autograd.grad(
+                g,
+                params,
+                retain_graph=True
+            )
+
+            row = torch.cat([
+                sg.reshape(-1)
+                for sg in second_grads
+            ])
+
+            hessian_rows.append(row)
+
+    # [N, N]
+    hessian = torch.stack(hessian_rows)
+     
+    # force symmetric (theoretically hessian is symmetric, but pytorch can have slight variation due to float precision etc, so forcing the symmetry to be exact)
+    hessian = 0.5 * (hessian + hessian.T)
+    
+    # numerical stabilization
+    eps = 1e-6
+    hessian = hessian + eps * torch.eye(
+        hessian.shape[0],
+        device=hessian.device
+    )
+
+
+    # eigenvalues
+    eigvals_raw = torch.linalg.eigvalsh(hessian)
+
+    eigvals_pos = torch.clamp(eigvals_raw, min=0)
+    eigvals_abs = eigvals_raw.abs()
+
+    # traces
+    trace_signed = eigvals_raw.sum()
+    trace_pos = eigvals_pos.sum()
+    trace_abs = eigvals_abs.sum()
+
+    # extrema
+    min_eigenval = eigvals_raw.min()
+    max_eigenval = eigvals_raw.max()
+
+    # negatives
+    num_negative = (eigvals_raw < 0).sum()
+
+    # effective rank + participation ratio (positive)
+    p_pos = eigvals_pos / (eigvals_pos.sum() + 1e-12)
+
+    effective_rank_pos = torch.exp(
+        -(p_pos * torch.log(p_pos + 1e-12)).sum()
+    )
+
+    participation_ratio_pos = (
+        (eigvals_pos.sum() ** 2)
+        /
+        (torch.sum(eigvals_pos ** 2) + 1e-12)
+    )
+
+    # effective rank + participation ratio (absolute)
+    p_abs = eigvals_abs / (eigvals_abs.sum() + 1e-12)
+
+    effective_rank_abs = torch.exp(
+        -(p_abs * torch.log(p_abs + 1e-12)).sum()
+    )
+
+    participation_ratio_abs = (
+        (eigvals_abs.sum() ** 2)
+        /
+        (torch.sum(eigvals_abs ** 2) + 1e-12)
+    )
+
+    # counts
+    num_large_pos_eigs = (eigvals_pos > 1e-4).sum()
+    num_large_abs_eigs = (eigvals_abs > 1e-4).sum()
+
+    return {
+
+        "trace_signed": trace_signed.item(),
+        "trace_pos": trace_pos.item(),
+        "trace_abs": trace_abs.item(),
+
+        "min_eigenval": min_eigenval.item(),
+        "max_eigenval": max_eigenval.item(),
+
+        "num_negative": num_negative.item(),
+
+        "effective_rank_pos": effective_rank_pos.item(),
+        "effective_rank_abs": effective_rank_abs.item(),
+        
+        "participation_ratio_pos": participation_ratio_pos.item(),
+        "participation_ratio_abs": participation_ratio_abs.item(),
+
+        "num_large_pos_eigs": num_large_pos_eigs.item(),
+        "num_large_abs_eigs": num_large_abs_eigs.item()
+    }
