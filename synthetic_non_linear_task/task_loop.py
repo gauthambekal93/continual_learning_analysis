@@ -8,7 +8,7 @@ import torch
 from tqdm import tqdm
 from models.feed_forward_network import MLP
 from task_generator import sample_task_params, sample_from_task
-from utils.metrics import accuracy, grad_stats, total_avg_grad_norm, dead_relu_fraction, get_hessian_metrics
+from utils.metrics import accuracy, grad_stats, total_avg_grad_norm, dead_relu_fraction, get_hessian_metrics, combine_hessian_metrics
 from utils.save_and_load import save_checkpoint
 from training.train_loop import train_one_task
 
@@ -49,8 +49,11 @@ def run_tasks(
         Xte, yte = sample_from_task(params, n=n_test, noise=noise)
     
         acc_before = accuracy(net, Xte, yte, device=device)
-    
-        avg_grad, loss_before, loss_after = train_one_task(
+        
+        if (t) % save_every == 0:
+            hessian_metrics_before = get_hessian_metrics( Xtr, ytr, device, net)
+
+        avg_grad, loss_before, loss_after, avg_neg_count, avg_weight_size, avg_bias_size = train_one_task(
             net,
             Xtr,
             ytr,
@@ -67,8 +70,10 @@ def run_tasks(
         
             dead = dead_relu_fraction(net, Xte, device=device)
             avg_grad_norm = total_avg_grad_norm(avg_grad)
-            hessian_metrics = get_hessian_metrics( Xtr, ytr, device, net)
-        
+            hessian_metrics_after = get_hessian_metrics( Xtr, ytr, device, net)
+            
+            hessian_metrics = combine_hessian_metrics(hessian_metrics_before, hessian_metrics_after)
+            
             row = {
                 "task": t,
                 "acc_before": acc_before,
@@ -77,10 +82,13 @@ def run_tasks(
                 "loss_before":loss_before,
                 "loss_after": loss_after,
                 "avg_grad_norm": avg_grad_norm,
+                "avg_weight_size":avg_weight_size,
+                "avg_bias_size":avg_bias_size,
                 "collapsed": int(acc_after < 0.55 and avg_grad_norm < 1e-6)
             }
         
             row.update(avg_grad)
+            row.update(avg_neg_count)
             row.update(dead)
             row.update(hessian_metrics)
             rows.append(row)

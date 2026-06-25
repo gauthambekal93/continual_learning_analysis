@@ -1,0 +1,22 @@
+{
+"seed":20,
+"depth": 4,
+"width":10,
+"num_tasks":1000,
+"epochs_per_task":20,
+"batch_size":64,
+"n_train":512,
+"n_test":2048,
+"noise":0.02,
+"lr":1e-2,
+"wd":0.0,
+"activation":"concat_relu",
+"device":"cpu",
+"out_dir":"results/synthetic_non_linear_task/",
+"save_every":1,
+"print_every":1,
+"residual": false,
+"norm":"none",
+"details": "we measure hessian both before start of task and after end of task"
+
+}

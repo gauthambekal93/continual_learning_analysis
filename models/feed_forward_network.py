@@ -7,7 +7,7 @@ Created on Thu Jun 11 11:00:31 2026
 
 
 from torch import nn
-from models.relu_activation import CReLU
+from models.activation import CReLU
 from models.resnet import ResBlock
 
 class MLP(nn.Module):
@@ -28,12 +28,15 @@ class MLP(nn.Module):
             act = lambda: nn.LeakyReLU(0.01)
         elif activation == "concat_relu":
             act = CReLU
+            
         else:
             raise ValueError("unknown activation")
 
         def make_norm(dim):
             if norm == "layernorm":
                 return nn.LayerNorm(dim)
+            elif norm == "batchnorm":
+                return nn.BatchNorm1d(dim)
             elif norm == "none":
                 return nn.Identity()
             else:
@@ -45,12 +48,18 @@ class MLP(nn.Module):
             layers.append(nn.Linear(in_dim, 2))
 
         else:
-            layers.append(nn.Linear(in_dim, width))
-            layers.append(make_norm(width))
-            layers.append(act())
-
+            if activation != 'concat_relu':
+                layers.append(nn.Linear(in_dim, width))
+                layers.append(make_norm(width))
+                layers.append(act())
+            else:
+                layers.append(nn.Linear(in_dim, width // 2 ))
+                layers.append(make_norm(width))
+                layers.append(act())
+                
+                
             for _ in range(depth - 2):
-                if residual and activation != "concat_relu":
+                if residual is True and activation != "concat_relu":
                     layers.append(
                         ResBlock(
                             width,
@@ -58,11 +67,19 @@ class MLP(nn.Module):
                             norm=norm
                         )
                     )
-                else:
+                if residual is False and activation != "concat_relu":
                     layers.append(nn.Linear(width, width))
                     layers.append(make_norm(width))
                     layers.append(act())
-
+                
+                if residual is False and activation == "concat_relu":
+                    layers.append(nn.Linear(width, width // 2))
+                    layers.append(make_norm(width))
+                    layers.append(act())
+                
+                if residual is True and activation == "concat_relu":
+                    raise ValueError("Residual with ConCat Relu Implemented Yet !")
+                    
             layers.append(nn.Linear(width, 2))
 
         self.net = nn.Sequential(*layers)

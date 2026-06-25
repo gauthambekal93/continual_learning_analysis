@@ -1,8 +1,8 @@
 {
 "seed":20,
-"depth": 20,
+"depth": 4,
 "width":10,
-"num_tasks":200,
+"num_tasks":500,
 "epochs_per_task":20,
 "batch_size":64,
 "n_train":512,
@@ -13,8 +13,8 @@
 "activation":"relu",
 "device":"cpu",
 "out_dir":"results/synthetic_non_linear_task/",
-"save_every":10,
-"print_every":10,
-"residual": false,
+"save_every":1,
+"print_every":1,
+"residual": true,
 "norm":"none"
 }

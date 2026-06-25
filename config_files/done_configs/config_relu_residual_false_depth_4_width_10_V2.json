@@ -1,6 +1,6 @@
 {
 "seed":20,
-"depth": 16,
+"depth": 4,
 "width":10,
 "num_tasks":200,
 "epochs_per_task":20,
@@ -13,8 +13,10 @@
 "activation":"relu",
 "device":"cpu",
 "out_dir":"results/synthetic_non_linear_task/",
-"save_every":10,
-"print_every":10,
+"save_every":1,
+"print_every":1,
 "residual": false,
-"norm":"none"
+"norm":"none",
+"details": "we measure hessian both before start of task and after end of task"
+
 }

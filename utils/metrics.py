@@ -20,14 +20,49 @@ def accuracy(net, X, y, device="cpu"):
     pred = net(X).argmax(dim=1)
     return (pred == y).float().mean().item()
 
-
+'''
 def grad_stats(net):
     out = {}
+    weight_size, param_count = 0, 0
     for name, p in net.named_parameters():
         if p.grad is not None:
             out[name + "_grad_norm"] = p.grad.detach().norm().item()
             out[name + "_weight_norm"] = p.detach().norm().item()
-    return out
+            out[name + "_percent_neg_weight"] = p[p<=0].numel() / p.numel()
+            weight_size = weight_size + p.sum().item()
+            param_count = param_count + len(p)
+            
+            if  out[name + "_percent_neg_weight"] >1:
+                print("stop")
+                print("stop")
+                
+    normalized_weight_size = weight_size / param_count
+    
+    return out, weight_size, normalized_weight_size
+'''
+
+def grad_stats(net):
+    out = {}
+    total_weight_size, total_bias_size, weight_count, bias_count = 0, 0, 0, 0
+    
+    for name, p in net.named_parameters():
+        if p.grad is not None:
+            out[name + "_grad_norm"] = p.grad.detach().norm().item()
+            out[name + "_weight_norm"] = p.detach().norm().item()
+            out[name + "_percent_neg_weight"] = p[p<=0].numel() / p.numel()
+            
+            if 'weight' in name:
+                total_weight_size = total_weight_size + p.sum().item()
+                weight_count = weight_count + p.numel()
+            if 'bias' in name:
+                total_bias_size = total_bias_size + p.sum().item()
+                bias_count = bias_count + p.numel()
+            
+    avg_weight_size = total_weight_size / weight_count
+    
+    avg_bias_size = total_bias_size / bias_count
+    
+    return out, avg_weight_size, avg_bias_size
 
 
 def total_avg_grad_norm(avg_grad):
@@ -177,3 +212,13 @@ def get_hessian_metrics(X, y, device, net):
         "num_large_pos_eigs": num_large_pos_eigs.item(),
         "num_large_abs_eigs": num_large_abs_eigs.item()
     }
+
+
+def combine_hessian_metrics(hessian_metrics_before, hessian_metrics_after):
+    hessian_metrics = {}
+    for (k1, v1), (k2, v2) in zip(hessian_metrics_before.items(), hessian_metrics_after.items()):
+        hessian_metrics[k1+'_before']=v1
+        hessian_metrics[k2+'_after']=v2
+    
+    return hessian_metrics
+
