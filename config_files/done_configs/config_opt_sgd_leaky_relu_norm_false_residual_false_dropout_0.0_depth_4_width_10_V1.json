@@ -1,0 +1,27 @@
+{
+"seed":20,
+"depth": 4,
+"width":10,
+"num_tasks":1000,
+"epochs_per_task":20,
+"batch_size":64,
+"n_train":512,
+"n_test":2048,
+"noise":0.02,
+"lr":1e-2,
+"wd":0.0,
+"activation":"leaky_relu",
+"device":"cpu",
+"out_dir":"results/synthetic_non_linear_task/",
+"save_every":1,
+"print_every":1,
+"residual": false,
+"norm":"none",
+"dropout":0.0,
+"opt_name":"sgd",
+"momentum":0.9,
+"return_pre_act": false,
+"return_layer_out": true,
+"details": "We measure 1. hessian at start and end of task, 2. We measure negetive weight configuration, 3. We measure hidden_output. 4. We measure transition probabilities per layer level. 5. We have added dropout. 6. opt is sgd"
+
+}

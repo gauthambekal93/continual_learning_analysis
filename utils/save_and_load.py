@@ -16,24 +16,31 @@ import pandas as pd
 import torch
 from tqdm import tqdm
 
-def save_tracker(root_dir, run_id, config):
+def update_tracker(root_dir, run_id, config):
     
     tracker_path = os.path.join(
         root_dir,
         "tracker.csv"
     )
     
-    temp = {"run_id": run_id}
-    
-    temp.update(config)
-    
-    new_row = pd.DataFrame([temp])
-    
     if os.path.exists(tracker_path):
-    
-        old_df = pd.read_csv(tracker_path)
-    
-        df = pd.concat([old_df, new_row], ignore_index=True)
+        
+        df = pd.read_csv(tracker_path)
+        
+        temp = {"run_id": run_id}
+        
+        if run_id in df.run_id.values:
+        
+            df.loc[df['run_id'] == run_id, 'status'] = "completed"
+            
+        else:
+            temp.update({"status":"not completed"})
+        
+            temp.update(config)
+        
+            new_row = pd.DataFrame([temp])
+        
+            df = pd.concat([df, new_row], ignore_index=True)
     
     else:
     

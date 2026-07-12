@@ -15,6 +15,8 @@ class ResBlock(nn.Module):
             self.act = nn.ReLU()
         elif activation == "leaky_relu":
             self.act = nn.LeakyReLU(0.01)
+        elif activation == "tanh":
+            self.act = nn.Tanh()
         else:
             raise ValueError("Residual block only supports relu/leaky_relu for now")
 

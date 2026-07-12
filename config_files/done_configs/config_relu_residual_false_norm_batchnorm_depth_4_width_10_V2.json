@@ -2,7 +2,7 @@
 "seed":20,
 "depth": 4,
 "width":10,
-"num_tasks":200,
+"num_tasks":1000,
 "epochs_per_task":20,
 "batch_size":64,
 "n_train":512,
@@ -15,8 +15,10 @@
 "out_dir":"results/synthetic_non_linear_task/",
 "save_every":1,
 "print_every":1,
-"residual": true,
-"norm":"none",
-"details": "we measure hessian both before start of task and after end of task"
+"residual": false,
+"norm":"batchnorm",
+"return_pre_act": false,
+"return_layer_out": true,
+"details": "We measure hessian both before start of task and after end of task. We also measure amount of negetive weight configuration."
 
 }

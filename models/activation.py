@@ -12,4 +12,11 @@ import torch.nn.functional as F
 class CReLU(nn.Module):
     def forward(self, x):
         return torch.cat([F.relu(x), F.relu(-x)], dim=1)
-    
+
+
+
+class CustomTanh(nn.Module):
+
+    def forward(self, x):
+        alpha = 0.25
+        return torch.tanh(alpha * x) / alpha    

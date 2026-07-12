@@ -27,6 +27,10 @@ def train_one_task(
 
     total_grad, neg_weight_count = {}, {}
     total_weight_size, total_bias_size = [], []
+    total_layer_weight_size, total_layer_bias_size = {}, {}
+    #fully_nonpos_ip_neuron_percent ={}
+    lop_score_layer ={}
+    
     num_batches = 0
     loss_before, loss_after = None, None
 
@@ -40,9 +44,12 @@ def train_one_task(
             yb = y_epoch[i:i + batch_size]
 
             opt.zero_grad()
-            loss = ce(net(xb), yb)
+            result = net(xb)
+            
+            pred = result["pred"]
+            loss = ce(pred, yb)
             loss.backward()
- 
+            
             #batch_stats, weight_size, normalized_weight_size = grad_stats(net)
             batch_stats, weight_size, bias_size = grad_stats(net)
         
@@ -55,8 +62,16 @@ def train_one_task(
                     total_grad[k] = total_grad.get(k, 0.0) + v
                 if "percent_neg_weight" in k:    
                     neg_weight_count[k] =  neg_weight_count.get(k, 0.0) + v
-                    
-                        
+                
+                if 'weight_size' in k:    
+                    total_layer_weight_size[k] = total_layer_weight_size.get(k, 0.0) + v
+                
+                if 'bias_size' in k:
+                    total_layer_bias_size[k] = total_layer_bias_size.get(k, 0.0) + v
+                
+                if 'lop_score_layer' in k:
+                    lop_score_layer[k] = lop_score_layer.get(k, 0.0) + v
+                
             opt.step()
             num_batches += 1
             
@@ -68,15 +83,18 @@ def train_one_task(
     avg_weight_size = np.mean( total_weight_size )
     avg_bias_size = np.mean(total_bias_size)
     
-    avg_grad = {
-        k: v / max(num_batches, 1)
-        for k, v in total_grad.items()
-    }
+    avg_grad = { k: v / max(num_batches, 1) for k, v in total_grad.items() }
    
-    avg_neg_count = {
-        k: v / max(num_batches, 1)
-        for k, v in neg_weight_count.items()
-    }
+    avg_neg_count = { k: v / max(num_batches, 1) for k, v in neg_weight_count.items() }
+
+    avg_layer_weight_size =  { k: v / max(num_batches, 1) for k, v in total_layer_weight_size.items() }
+    
+    avg_layer_bias_size =  { k: v / max(num_batches, 1) for k, v in total_layer_bias_size.items() }
+    
+    avg_lop_score_layer = { k: v / max(num_batches, 1) for k, v in lop_score_layer.items() }
+    
+    return avg_grad, loss_before, loss_after, avg_neg_count, avg_weight_size, avg_bias_size, avg_layer_weight_size, avg_layer_bias_size, avg_lop_score_layer
 
 
-    return avg_grad, loss_before, loss_after, avg_neg_count, avg_weight_size, avg_bias_size
+
+

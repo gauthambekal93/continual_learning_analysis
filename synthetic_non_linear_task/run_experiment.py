@@ -23,7 +23,7 @@ experiment_dir = Path(__file__).resolve().parent
 root_dir = Path(__file__).resolve().parent.parent 
 sys.path.append(str(root_dir))
 
-from utils.save_and_load import save_tracker
+from utils.save_and_load import update_tracker
 
 from datetime import datetime
 import uuid
@@ -78,7 +78,7 @@ for config_name, config in zip( config_names, configs ):
     
     run_id = get_unique_id()
 
-    save_tracker(root_dir, run_id, config)
+    update_tracker(root_dir, run_id, config)
     
     seed = config["seed"]
     depth = config["depth"]
@@ -98,7 +98,12 @@ for config_name, config in zip( config_names, configs ):
     print_every = config["print_every"]
     residual = config["residual"]
     norm = config["norm"]
-
+    dropout = config["dropout"]
+    opt_name = config["opt_name"]
+    momentum = config["momentum"]
+    return_pre_act = config["return_pre_act"]
+    return_layer_out = config["return_layer_out"]
+    
     
     run_tasks( 
      root_dir, 
@@ -120,9 +125,15 @@ for config_name, config in zip( config_names, configs ):
      save_every,
      print_every,
      residual ,
-     norm
+     norm,
+     dropout,
+     opt_name,
+     momentum,
+     return_pre_act,
+     return_layer_out
      )
     
     move_config(config_name)
-
+    update_tracker(root_dir, run_id, config)
+    
         
