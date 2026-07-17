@@ -386,13 +386,50 @@ def get_transition_probs(param_signs_before, param_signs_after):
  
 
 
-
-    
- 
+def get_local_sensitivity(x, device, net):
         
-    
+        if isinstance(x, np.ndarray):
+            x = torch.as_tensor(x, dtype=torch.float32, device=device)
+        
+        layer_ops = {}
+            
+        for layer_num, layer in enumerate(net.net):
+            print(layer_num)
+            layer_name = layer.__class__.__name__
+            
+            x = layer(x)
+            
+            layer_ops[str(layer_num)+'_'+layer_name] = x
+
+        local_sensitivity ={}   
+        previous_layer = None
+        
+        for layer_name, v in layer_ops.items():
+            print(layer_name)
+            if 'linear' in layer_name.lower():
+                
+                if previous_layer !=None:
+                    
+                    for hidden_id in range(layer_ops[layer_name].shape[1]): 
+                        
+                            all_grads = [torch.autograd.grad( layer_ops[layer_name][data_id ,hidden_id] , layer_ops[previous_layer], retain_graph=True) [0][data_id] 
+                                                                                     for data_id in range( len(x) ) ]
+                            
+                            all_grads = torch.cat( all_grads, dim =0)
+                            local_sensitivity[layer_name+"_"+str(hidden_id)+"_neuron"]  = all_grads.abs().mean().item()
+                            
+                previous_layer = layer_name
+                
+        
+        return local_sensitivity
+   
     
      
+'''
+all_grads = torch.tensor( [torch.autograd.grad( layer_ops['4_Linear'][data_id, hidden_id], layer_ops['0_Linear'] ) [data_id]  for data_id in range( len(x) ) ])
+mean_grad = torch.mean(grad, dim =0 )
+'''
+
 
 
 

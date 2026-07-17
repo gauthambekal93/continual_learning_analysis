@@ -8,7 +8,7 @@ import torch
 from tqdm import tqdm
 from models.feed_forward_network_2 import MLP
 from task_generator import sample_task_params, sample_from_task
-from utils.metrics import accuracy, grad_stats, total_avg_grad_norm, dead_relu_fraction, get_hessian_metrics, combine_hessian_metrics, get_param_signs, get_transition_probs
+from utils.metrics import accuracy, grad_stats, total_avg_grad_norm, dead_relu_fraction, get_hessian_metrics, combine_hessian_metrics, get_param_signs, get_transition_probs, get_local_sensitivity
 from utils.save_and_load import save_checkpoint
 from training.train_loop import train_one_task
 
@@ -99,6 +99,8 @@ def run_tasks(
             
             transition_probs = get_transition_probs(param_signs_before, param_signs_after)
             
+            local_sensitivity = get_local_sensitivity(Xtr, device, net)
+            
             row = {
                 "task": t,
                 "acc_before": acc_before,
@@ -126,6 +128,7 @@ def run_tasks(
             #row.update(dead)
             row.update(hessian_metrics)
             row.update(transition_probs)
+            row.update(local_sensitivity)
             rows.append(row)
           
             print(    f"task={t} acc_before={acc_before:.3f} acc_after={acc_after:.3f} ")
